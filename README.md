@@ -166,7 +166,7 @@ Notable things to know:
 
 * All dynamic parts are enclosed by `{{` and `}}`
 
-* In case of postlayouts the root object (`.`) is a `Page` structure whose properties (like `.Body` or `.Title`) are used to generate content.
+* In case of postlayouts the root object (`.`) is a `Post` structure whose properties (like `.Body` or `.Title`) are used to generate content.
 
 * You can spot some **built-in functions** of the Go templates (like `range`) ...
 
@@ -181,7 +181,7 @@ Notable things to know:
     {{ end }}
   </ul>
   ```
-* while `.Tags` is a **property of Page** containing the **tags for the current post**, `tags .` is a **function** giving back **all the tags used in the project**.
+* while `.Tags` is a **property of Post** containing the **tags for the current post**, `tags .` is a **function** giving back **all the tags used in the project**.
 
 #### Post root object properties 
 
@@ -203,7 +203,7 @@ Some layouts are treated specially:
 
 * `post.tpl.html` is the **default layout for posts**; it can be overridden per single post via the post's front matter's `layout` property
 
-* `tag.tpl.html` is the **default page for a specific tag**
+* `tag.tpl.html` is the **default layout for a specific tag page**
 
 #### Creating a homepage
 

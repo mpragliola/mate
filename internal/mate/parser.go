@@ -23,17 +23,17 @@ func NewParser() *Parser {
 
 // ParsePaths will scan a slice of local, relative paths (provided ideally by mate.Aggregator)
 // performing ParsePath on each one and returning an array of pages.
-func (p *Parser) ParsePaths(paths []string, project *Project) ([]Page, error) {
-	pages := make([]Page, 0)
+func (p *Parser) ParsePaths(paths []string, project *Project) ([]Post, error) {
+	posts := make([]Post, 0)
 
 	wg := sync.WaitGroup{}
 
 	for _, path := range paths {
 		wg.Add(1)
 		go func(path string) {
-			if page, err := p.ParsePath(path, project); err == nil {
+			if post, err := p.ParsePath(path, project); err == nil {
 				p.mu.Lock()
-				pages = append(pages, *page)
+				posts = append(posts, *post)
 				p.mu.Unlock()
 			}
 
@@ -43,10 +43,12 @@ func (p *Parser) ParsePaths(paths []string, project *Project) ([]Page, error) {
 
 	wg.Wait()
 
-	return pages, nil
+	posts = project.PostsSorted(project.CreatedOnSorter())
+
+	return posts, nil
 }
 
-func (p *Parser) ParsePath(path string, project *Project) (*Page, error) {
+func (p *Parser) ParsePath(path string, project *Project) (*Post, error) {
 	relativePath, _ := filepath.Rel(project.GetPostsDirectory(), path)
 
 	source, err := os.ReadFile(path)
@@ -69,17 +71,22 @@ func (p *Parser) ParsePath(path string, project *Project) (*Page, error) {
 	project.AddTags(tags...)
 	p.mu.Unlock()
 
-	return &Page{
-			CreatedOn: time.Now(),
-			Title:     fm.GetValue("title", fileName),
-			Tags:      tags,
-			Path:      filepath.Dir(relativePath),
-			File:      fileName,
-			Source:    fm.GetBody(),
-			Body:      template.HTML(buf.String()),
-			Layout:    fm.GetValue("layout", "post"),
-			Slug:      fileName,
-			Project:   project,
-		},
-		nil
+	post := &Post{
+		CreatedOn: time.Now(),
+		Title:     fm.GetValue("title", fileName),
+		Tags:      tags,
+		Path:      filepath.Dir(relativePath),
+		File:      fileName,
+		Source:    fm.GetBody(),
+		Body:      template.HTML(buf.String()),
+		Layout:    fm.GetValue("layout", "post"),
+		Slug:      fileName,
+		Project:   project,
+	}
+
+	p.mu.Lock()
+	project.AddPost(*post)
+	p.mu.Unlock()
+
+	return post, nil
 }

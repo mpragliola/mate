@@ -6,7 +6,7 @@ import (
 
 	"github.com/mpragliola/mate/internal/file"
 	"github.com/mpragliola/mate/internal/mate"
-	"github.com/mpragliola/mate/internal/pagesaver"
+	"github.com/mpragliola/mate/internal/postsaver"
 	"github.com/mpragliola/stopwatch"
 )
 
@@ -17,7 +17,7 @@ func main() {
 
 	a := mate.NewAggregator()
 	pa := mate.NewParser()
-	ps := &pagesaver.FilePageSaver{}
+	ps := &postsaver.FilePostSaver{}
 	w := mate.NewWriter(ps)
 
 	paths, err := a.AggregatePostPaths(p)

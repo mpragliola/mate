@@ -4,10 +4,10 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/mpragliola/mate/internal/pagesaver"
+	"github.com/mpragliola/mate/internal/postsaver"
 )
 
-func Copy(source, dest string, fs pagesaver.PageSaver) error {
+func Copy(source, dest string, fs postsaver.PostSaver) error {
 	sourceInfo, err := os.Stat(source)
 	if err != nil {
 		return err

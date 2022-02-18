@@ -8,37 +8,37 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/mpragliola/mate/internal/pagesaver"
+	postsaver "github.com/mpragliola/mate/internal/postsaver"
 )
 
 type Writer struct {
-	pageSaver pagesaver.PageSaver
+	postSaver postsaver.PostSaver
 }
 
-func NewWriter(ps pagesaver.PageSaver) *Writer {
+func NewWriter(ps postsaver.PostSaver) *Writer {
 	return &Writer{
-		pageSaver: ps,
+		postSaver: ps,
 	}
 }
 
-func (w *Writer) Write(page Page, project *Project) error {
+func (w *Writer) Write(post Post, project *Project) error {
 	destinationPath := filepath.Join(
 		project.GetPublicDirectory(),
-		page.Path,
+		post.Path,
 	)
 	if _, err := os.Stat(destinationPath); err != nil {
 		os.MkdirAll(destinationPath, 0755)
 	}
 
-	fileName := page.File + ".html"
+	fileName := post.File + ".html"
 
-	layoutPath := layoutPathProvider(page.Layout, project)
-	templatedSource, err := parseLayout(layoutPath, page, project)
+	layoutPath := layoutPathProvider(post.Layout, project)
+	templatedSource, err := parseLayout(layoutPath, post, project)
 	if err != nil {
 		return err
 	}
 
-	err = w.pageSaver.Save(filepath.Join(destinationPath, fileName), templatedSource)
+	err = w.postSaver.Save(filepath.Join(destinationPath, fileName), templatedSource)
 	if err != nil {
 		return err
 	}
@@ -46,12 +46,12 @@ func (w *Writer) Write(page Page, project *Project) error {
 	return nil
 }
 
-func (w *Writer) WritePages(pages []Page, project *Project) error {
+func (w *Writer) WritePages(posts []Post, project *Project) error {
 	wg := sync.WaitGroup{}
 
-	for _, p := range pages {
+	for _, p := range posts {
 		wg.Add(1)
-		go func(p Page) {
+		go func(p Post) {
 			defer wg.Done()
 
 			w.Write(p, project)
@@ -72,7 +72,7 @@ func layoutPathProvider(layout string, project *Project) string {
 	return layoutPath
 }
 
-func parseLayout(layoutPath string, page Page, project *Project) (string, error) {
+func parseLayout(layoutPath string, post Post, project *Project) (string, error) {
 	t, err := template.New(filepath.Base(layoutPath)).Funcs(
 		template.FuncMap{
 			"tags": func() []string {
@@ -84,6 +84,14 @@ func parseLayout(layoutPath string, page Page, project *Project) (string, error)
 					tag+".html",
 				)
 			},
+			"pagessorted": func(mode string) []Post {
+				switch mode {
+				case "created":
+					return project.PostsSorted(project.CreatedOnSorter())
+				default:
+					return project.Posts()
+				}
+			},
 		},
 	).ParseFiles(layoutPath)
 	if err != nil {
@@ -91,7 +99,7 @@ func parseLayout(layoutPath string, page Page, project *Project) (string, error)
 	}
 
 	var buf bytes.Buffer
-	err = t.Execute(&buf, page)
+	err = t.Execute(&buf, post)
 	if err != nil {
 		return "", err
 	}

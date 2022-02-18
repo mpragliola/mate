@@ -1,8 +1,9 @@
 ---
 layout: index
+tags: home
 ---
-Pollo 
+# Homepage 
 
-# asdnasdnsa
+This is the homepage!
 
-dsafdf
+Go to the [FAQ](faq/faq.html)
