@@ -35,7 +35,7 @@ It has very basic features but it is blazing fast thanks to the implementation i
 
 ### What is a static site generator?
 
-To provide easily content for a website generally we relie on **frameworks** or even more often **CMS applications**; while extremely flexible and powerful, these applications are **dynamic** and therefore might depend a lot on their infrastructural dependencies and issues, other than being inherently more complex to manage and extend, involving many interacting parts.
+To provide easily content for a website generally we rely on **frameworks** or even more often **CMS applications**; while extremely flexible and powerful, these applications are **dynamic** and therefore might depend a lot on their infrastructural dependencies and issues, other than being inherently more complex to manage and extend, involving many interacting parts.
 
 This kind of complexity, though, is not needed for simpler websites, where we could benefit from a different approach; instead of relying on **databases**, **services** and **backend-generated content**, we **generate pure HTML files** using text files as source (written as **posts** in **Markdown** format), static assets and some HTML layouts.
 
