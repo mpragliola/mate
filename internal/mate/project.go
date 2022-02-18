@@ -27,8 +27,8 @@ func NewProject(workingDir, postsPath, layoutsPath, publicPath, tagsPath string)
 	}
 }
 
-func (p *Project) AddPost(page Post) {
-	p.posts = append(p.posts, page)
+func (p *Project) AddPost(post Post) {
+	p.posts = append(p.posts, post)
 }
 
 func (p *Project) Posts() []Post {
