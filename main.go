@@ -35,7 +35,7 @@ func main() {
 
 	stopwatch := stopwatch.NewStart()
 
-	paths, err := aggregator.AggregatePostPaths(p)
+	paths, err := aggregator.AggregatePostPaths(p.GetPostsDirectory())
 	if err != nil {
 		panic(err)
 	}

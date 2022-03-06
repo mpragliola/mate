@@ -6,8 +6,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-
-	"github.com/mpragliola/mate/internal/mate"
 )
 
 // Common markdown extension
@@ -18,15 +16,16 @@ const (
 
 // AggregatePostPaths scans the posts folder recursively, gathering the markdown files,
 // providing an array of their paths
-func AggregatePostPaths(p *mate.Project) ([]string, error) {
+func AggregatePostPaths(postsDirectory string) ([]string, error) {
 	paths := make([]string, 0)
 
-	if _, err := os.Stat(p.GetPostsDirectory()); err != nil {
-		return nil, fmt.Errorf(errorMessagePathNotFound, p.GetPostsDirectory())
+	//if _, err := os.Stat(p.GetPostsDirectory()); err != nil {
+	if _, err := os.Stat(postsDirectory); err != nil {
+		return nil, fmt.Errorf(errorMessagePathNotFound, postsDirectory)
 	}
 
 	err := filepath.WalkDir(
-		p.GetPostsDirectory(),
+		postsDirectory,
 		func(path string, d fs.DirEntry, err error) error {
 			if d.IsDir() {
 				return nil
