@@ -3,7 +3,6 @@ package aggregator
 import (
 	"fmt"
 	"io/fs"
-	"log"
 	"os"
 	"path/filepath"
 )
@@ -14,12 +13,11 @@ const (
 	errorMessagePathNotFound = "posts path [%s] not found"
 )
 
-// AggregatePostPaths scans the posts folder recursively, gathering the markdown files,
+// AggregatePostPaths scans a posts folder recursively, gathering the markdown files,
 // providing an array of their paths
 func AggregatePostPaths(postsDirectory string) ([]string, error) {
 	paths := make([]string, 0)
 
-	//if _, err := os.Stat(p.GetPostsDirectory()); err != nil {
 	if _, err := os.Stat(postsDirectory); err != nil {
 		return nil, fmt.Errorf(errorMessagePathNotFound, postsDirectory)
 	}
@@ -42,7 +40,7 @@ func AggregatePostPaths(postsDirectory string) ([]string, error) {
 	)
 
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	return paths, nil
