@@ -2,61 +2,77 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
+	"github.com/mpragliola/mate/internal/aggregator"
 	"github.com/mpragliola/mate/internal/file"
 	"github.com/mpragliola/mate/internal/mate"
 	"github.com/mpragliola/mate/internal/postsaver"
+	"github.com/mpragliola/mate/internal/server"
 	"github.com/mpragliola/stopwatch"
 )
 
 func main() {
-	stopwatch := stopwatch.NewStart()
-
 	p := mate.NewProject("example", "posts", "layouts", "public", "tags")
-
-	a := mate.NewAggregator()
 	pa := mate.NewParser()
 	ps := &postsaver.FilePostSaver{}
 	w := mate.NewWriter(ps)
 
-	paths, err := a.AggregatePostPaths(p)
+	if len(os.Args) > 1 {
+		command := os.Args[1]
+
+		switch command {
+		case "init":
+			if len(os.Args) == 2 {
+
+			}
+			return
+		case "serve":
+			server.Serve(p, pa)
+		}
+	}
+
+	stopwatch := stopwatch.NewStart()
+
+	paths, err := aggregator.AggregatePostPaths(p)
 	if err != nil {
 		panic(err)
 	}
 
-	stopwatch.Mark("Aggregated .md")
+	stopwatch.Mark("Aggregate .md")
 
 	pages, err := pa.ParsePaths(paths, p)
 	if err != nil {
 		panic(err)
 	}
 
-	stopwatch.Mark("Parsed to HTML")
+	stopwatch.Mark("Parse to HTML")
+
+	err = w.Clean(p)
+	if err != nil {
+		panic(err)
+	}
+
+	stopwatch.Mark("Wipe public folder")
 
 	err = w.WritePages(pages, p)
 	if err != nil {
 		panic(err)
 	}
 
-	stopwatch.Mark("Written HTML")
+	stopwatch.Mark("Write HTML")
 
 	err = file.Copy(
-		filepath.Join(
-			p.GetLayoutsDirectory(),
-			"assets",
-		),
-		filepath.Join(
-			p.GetPublicDirectory(),
-			"assets",
-		),
+		filepath.Join(p.GetLayoutsDirectory(), "assets"),
+		filepath.Join(p.GetPublicDirectory(), "assets"),
 		ps,
 	)
 	if err != nil {
 		panic(err)
 	}
 
-	stopwatch.Mark("Assets copied")
+	stopwatch.Mark("Copy assets")
 
 	fmt.Printf("No. of posts:%11d posts\n", len(paths))
 
