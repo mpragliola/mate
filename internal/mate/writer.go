@@ -63,6 +63,10 @@ func (w *Writer) WritePages(posts []Post, project *Project) error {
 	return nil
 }
 
+func (w *Writer) Clean(project *Project) error {
+	return os.RemoveAll(project.GetPublicDirectory())
+}
+
 func layoutPathProvider(layout string, project *Project) string {
 	layoutPath := filepath.Join(
 		project.GetLayoutsDirectory(),

@@ -1,14 +1,19 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>My homepage!</title>
-    <body>
-        {{ .Body }}
-        <p>
-            {{- range tags }}
-            <a href="{{ linktag . }}">{{ . }}</a>
-            {{- end }}
-        </p>
-    </body>
+    <link rel="stylesheet" href="assets/main.css">
+    < </head>
+
+<body>
+    {{ .Body }}
+    <p>
+        {{- range tags }}
+        <a href="{{ linktag . }}">{{ . }}</a>
+        {{- end }}
+    </p>
+</body>
 </head>
+
 </html>
