@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title></title>
-    </head>
-    <body>
-        {{ tagList }}
-    </body>
+
+<head>
+    <title>Tag | {{ . }}</title>
+</head>
+
+<body>
+    <a href="{{ linktag . }}">{{ . }}</a>
+</body>
+
 </html>

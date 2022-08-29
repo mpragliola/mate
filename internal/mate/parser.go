@@ -2,7 +2,6 @@ package mate
 
 import (
 	"bytes"
-	"fmt"
 	"html/template"
 	"os"
 	"path/filepath"
@@ -11,6 +10,7 @@ import (
 	"time"
 
 	"github.com/yuin/goldmark"
+	"golang.org/x/sync/errgroup"
 )
 
 type Parser struct {
@@ -26,22 +26,26 @@ func NewParser() *Parser {
 func (p *Parser) ParsePaths(paths []string, project *Project) ([]Post, error) {
 	posts := make([]Post, 0)
 
-	wg := sync.WaitGroup{}
+	g := new(errgroup.Group)
 
 	for _, path := range paths {
-		wg.Add(1)
-		go func(path string) {
+		path := path
+		g.Go(func() error {
 			if post, err := p.ParsePath(path, project); err == nil {
 				p.mu.Lock()
 				posts = append(posts, *post)
 				p.mu.Unlock()
-			}
 
-			wg.Done()
-		}(path)
+				return nil
+			} else {
+				return err
+			}
+		})
 	}
 
-	wg.Wait()
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
 
 	posts = project.PostsSorted(project.CreatedOnSorter())
 
@@ -53,7 +57,7 @@ func (p *Parser) ParsePath(path string, project *Project) (*Post, error) {
 
 	source, err := os.ReadFile(path)
 	if err != nil {
-		return nil, fmt.Errorf("error reading file " + path)
+		return nil, err
 	}
 
 	fm := NewFrontMatterFromSource(string(source))
@@ -61,7 +65,7 @@ func (p *Parser) ParsePath(path string, project *Project) (*Post, error) {
 	var buf bytes.Buffer
 	err = goldmark.Convert([]byte(fm.GetBody()), &buf)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing file " + path)
+		return nil, err
 	}
 
 	fileName := strings.TrimSuffix(filepath.Base(relativePath), filepath.Ext(relativePath))

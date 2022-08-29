@@ -45,7 +45,14 @@ func main() {
 		panic(err)
 	}
 
-	stopwatch.Mark("Write HTML")
+	stopwatch.Mark("Write HTML - posts")
+
+	err = w.WriteTags(pages, p)
+	if err != nil {
+		panic(err)
+	}
+
+	stopwatch.Mark("Write HTML - tags")
 
 	err = file.Copy(
 		filepath.Join(p.GetLayoutsDirectory(), "assets"),

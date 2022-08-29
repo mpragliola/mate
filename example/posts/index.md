@@ -1,8 +1,8 @@
 ---
 layout: index
-tags: home
+tags: home, docs
 ---
-# Homepage 
+# Homepage
 
 This is Mate's homepage!
 

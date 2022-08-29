@@ -6,9 +6,9 @@ import (
 	"html/template"
 	"os"
 	"path/filepath"
-	"sync"
 
 	postsaver "github.com/mpragliola/mate/internal/postsaver"
+	"golang.org/x/sync/errgroup"
 )
 
 type Writer struct {
@@ -19,6 +19,32 @@ func NewWriter(ps postsaver.PostSaver) *Writer {
 	return &Writer{
 		postSaver: ps,
 	}
+}
+
+func (w *Writer) WriteTag(tag string, project *Project) error {
+	destinationPath := filepath.Join(
+		project.GetPublicDirectory(),
+		project.GetPublicTagsPath(),
+	)
+	if _, err := os.Stat(destinationPath); err != nil {
+		os.MkdirAll(destinationPath, 0755)
+	}
+
+	fileName := tag + ".html"
+
+	layoutPath := layoutPathProvider("tag", project)
+
+	templatedSource, err := parseLayout(layoutPath, tag, project)
+	if err != nil {
+		return err
+	}
+
+	err = w.postSaver.Save(filepath.Join(destinationPath, fileName), templatedSource)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (w *Writer) Write(post Post, project *Project) error {
@@ -33,7 +59,7 @@ func (w *Writer) Write(post Post, project *Project) error {
 	fileName := post.File + ".html"
 
 	layoutPath := layoutPathProvider(post.Layout, project)
-	templatedSource, err := parseLayout(layoutPath, post, project)
+	templatedSource, err := parseLayout(layoutPath, &post, project)
 	if err != nil {
 		return err
 	}
@@ -46,19 +72,36 @@ func (w *Writer) Write(post Post, project *Project) error {
 	return nil
 }
 
-func (w *Writer) WritePages(posts []Post, project *Project) error {
-	wg := sync.WaitGroup{}
+func (w *Writer) WriteTags(posts []Post, project *Project) error {
+	g := new(errgroup.Group)
 
-	for _, p := range posts {
-		wg.Add(1)
-		go func(p Post) {
-			defer wg.Done()
+	for _, t := range project.GetTags() {
+		t := t
+		g.Go(func() error {
+			return w.WriteTag(t, project)
+		})
+	
 
-			w.Write(p, project)
-		}(p)
+	if err := g.Wait(); err != nil {
+		return err
 	}
 
-	wg.Wait()
+	return nil
+}
+
+func (w *Writer) WritePages(posts []Post, project *Project) error {
+	g := new(errgroup.Group)
+
+	for _, p := range posts {
+		p := p
+		g.Go(func() error {
+			return w.Write(p, project)
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -76,7 +119,7 @@ func layoutPathProvider(layout string, project *Project) string {
 	return layoutPath
 }
 
-func parseLayout(layoutPath string, post Post, project *Project) (string, error) {
+func parseLayout(layoutPath string, data interface{}, project *Project) (string, error) {
 	t, err := template.New(filepath.Base(layoutPath)).Funcs(
 		template.FuncMap{
 			"tags": func() []string {
@@ -103,7 +146,7 @@ func parseLayout(layoutPath string, post Post, project *Project) (string, error)
 	}
 
 	var buf bytes.Buffer
-	err = t.Execute(&buf, post)
+	err = t.Execute(&buf, data)
 	if err != nil {
 		return "", err
 	}
