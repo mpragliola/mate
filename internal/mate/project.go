@@ -5,6 +5,7 @@ import (
 	"sort"
 )
 
+// Project ...
 type Project struct {
 	workingDir  string
 	postsPath   string
@@ -12,9 +13,10 @@ type Project struct {
 	layoutsPath string
 	publicPath  string
 	tagsPath    string
-	tags        map[string]bool
+	tags        TagList
 }
 
+// NewProject ...
 func NewProject(workingDir, postsPath, layoutsPath, publicPath, tagsPath string) *Project {
 	return &Project{
 		workingDir:  workingDir,
@@ -23,61 +25,63 @@ func NewProject(workingDir, postsPath, layoutsPath, publicPath, tagsPath string)
 		layoutsPath: layoutsPath,
 		publicPath:  publicPath,
 		tagsPath:    tagsPath,
-		tags:        make(map[string]bool),
+		tags:        TagList{},
 	}
 }
 
+// AddPost ...
 func (p *Project) AddPost(post Post) {
 	p.posts = append(p.posts, post)
 }
 
+// Posts ...
 func (p *Project) Posts() []Post {
 	return p.posts
 }
 
+// PostsSorted ...
 func (p *Project) PostsSorted(sortFunction PageSorter) []Post {
 	sort.Slice(p.posts, sortFunction)
 
 	return p.posts
 }
 
+// AddTags ...
 func (p *Project) AddTags(tag ...string) {
-	for _, t := range tag {
-		if _, ok := p.tags[t]; !ok {
-			p.tags[t] = true
-		}
-	}
+	p.tags.AddTags(tag)
 }
 
+// GetPublicTagsPath ...
 func (p *Project) GetPublicTagsPath() string {
 	return filepath.Join(
+		p.GetPublicDirectory(),
 		p.tagsPath,
 	)
 }
 
-func (p *Project) GetTags() []string {
-	tags := make([]string, 0, len(p.tags))
-	for tag := range p.tags {
-		tags = append(tags, tag)
-	}
-
-	return tags
+// GetTags ...
+func (p *Project) GetTags() []Tag {
+	return p.tags.GetTags()
 }
 
+// GetPostsDirectory ...
 func (p *Project) GetPostsDirectory() string {
 	return filepath.Join(p.workingDir, p.postsPath)
 }
 
+// GetLayoutsDirectory ...
 func (p *Project) GetLayoutsDirectory() string {
 	return filepath.Join(p.workingDir, p.layoutsPath)
 }
 
+// GetPublicDirectory ...
 func (p *Project) GetPublicDirectory() string {
 	return filepath.Join(p.workingDir, p.publicPath)
 }
 
 //
 
+// CreatedOnSorter ...
 func (p *Project) CreatedOnSorter() PageSorter {
 	return func(i, j int) bool {
 		return p.posts[i].CreatedOn.Before(p.posts[j].CreatedOn)
@@ -86,4 +90,5 @@ func (p *Project) CreatedOnSorter() PageSorter {
 
 //
 
+// PageSorter ...
 type PageSorter func(i, j int) bool
