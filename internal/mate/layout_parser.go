@@ -10,13 +10,13 @@ import (
 func ParseLayout(layoutPath string, data interface{}, project *Project) (string, error) {
 	t, err := template.New(filepath.Base(layoutPath)).Funcs(
 		template.FuncMap{
-			"tags": func() []string {
+			"tags": func() []Tag {
 				return project.GetTags()
 			},
-			"linktag": func(tag string) string {
+			"linktag": func(tag Tag) string {
 				return filepath.Join(
 					project.GetPublicTagsPath(),
-					tag+".html",
+					tag.Name+".html",
 				)
 			},
 			"pagessorted": func(mode string) []Post {

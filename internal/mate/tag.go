@@ -10,6 +10,12 @@ type TagList struct {
 	tags map[string]bool
 }
 
+func NewTagList() *TagList {
+	return &TagList{
+		tags: make(map[string]bool),
+	}
+}
+
 // AddTag ...
 func (tl *TagList) AddTag(t string) *TagList {
 	tl.tags[t] = true

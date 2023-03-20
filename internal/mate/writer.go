@@ -21,12 +21,12 @@ func NewWriter(ps postsaver.PostSaver) *Writer {
 }
 
 // WriteTag ...
-func (w *Writer) WriteTag(tag string, project *Project) error {
+func (w *Writer) WriteTag(tag Tag, project *Project) error {
 	if _, err := os.Stat(project.GetPublicTagsPath()); err != nil {
 		os.MkdirAll(project.GetPublicTagsPath(), 0755)
 	}
 
-	fileName := tag + ".html"
+	fileName := tag.Name + ".html"
 	layoutPath := layoutPathProvider("tag", project)
 
 	templatedSource, err := ParseLayout(layoutPath, tag, project)

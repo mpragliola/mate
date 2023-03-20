@@ -25,7 +25,7 @@ func NewProject(workingDir, postsPath, layoutsPath, publicPath, tagsPath string)
 		layoutsPath: layoutsPath,
 		publicPath:  publicPath,
 		tagsPath:    tagsPath,
-		tags:        TagList{},
+		tags:        *NewTagList(),
 	}
 }
 
@@ -77,7 +77,7 @@ func (p *Project) GetLayoutsDirectory() string {
 // GetPublicDirectory ...
 func (p *Project) GetPublicDirectory() string {
 	return filepath.Join(p.workingDir, p.publicPath)
-}
+}																						
 
 //
 
